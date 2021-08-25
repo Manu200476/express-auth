@@ -18,14 +18,15 @@ exports.getSignup = (req, res) => {
 }
 
 exports.postLogin = (req, res) => {
-  User.findById('5bab316ce0a7c75f783cb8a8')
+  const { email } = req.body
+  User.findOne({ email })
     .then((user) => {
+      if (!user) {
+        return res.redirect('/')
+      }
       req.session.isLoggedIn = true
       req.session.user = user
-      req.session.save((err) => {
-        console.log(err)
-        res.redirect('/')
-      })
+      return req.session.save()
     })
     .catch((err) => console.log(err))
 }

@@ -29,7 +29,21 @@ exports.postLogin = (req, res) => {
     .catch((err) => console.log(err))
 }
 
-exports.postSignup = (req, res, next) => {}
+exports.postSignup = (req, res, next) => {
+  const { email, password } = req.body
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        res.redirect('/signup')
+      }
+      const newUser = new User({
+        email,
+        password,
+        cart: { items: [] },
+      })
+      return newUser.save()
+    })
+}
 
 exports.postLogout = (req, res) => {
   req.session.destroy((err) => {

@@ -103,13 +103,14 @@ exports.getNewPassword = (req, res) => {
     path: `/reset-password/${token}`,
     pageTitle: 'Reset Password',
     userId: userId.toString(),
+    token,
   })
 }
 
 exports.postNewPassword = (req, res) => {
   try {
-    const { userId, newPassword } = req.body
-    const user = User.findOne({ userId })
+    const { userId, newPassword, token } = req.body
+    const user = User.findOne({ _id: userId, resetToken: token, resetTokenExpiration: { $gt: Date.now() } })
     user.password = bcrypt.hash(12, newPassword)
     user.save()
     res.redirect('/')

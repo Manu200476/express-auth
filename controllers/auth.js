@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
+const { validationResult } = require('express-validator/check')
 const sendgridTransport = require('nodemailer-sendgrid-transport')
 
 const User = require('../models/user')
@@ -42,26 +43,37 @@ exports.postLogin = (req, res) => {
 }
 
 exports.postSignup = (req, res) => {
-  const { email, password } = req.body
-  User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        res.redirect('/signup')
-        return transporter.sendMail({
-          to: 'mjcnfcr@iuncuf.com',
-          from: 'ijcfu@icfj.com',
-          subject: 'cifhcir',
-          html: '<h1>vgrvrvrgv</h1>',
-        })
-      }
-      const hashedPassword = bcrypt.hash(password, 12)
-      const newUser = new User({
-        email,
-        password: hashedPassword,
-        cart: { items: [] },
+  try {
+    const { email, password } = req.body
+    const validate = validationResult(req.body)
+    if (!validate.isEmpty()) {
+      res.render('auth/signup', {
+        path: '/signup',
+        pageTitle: 'Signup',
+        isAuthenticated: false,
+        errorMessage: validate.array()[0].msg,
       })
-      return newUser.save()
+    }
+    const user = User.findOne({ email })
+    if (user) {
+      res.redirect('/signup')
+      return transporter.sendMail({
+        to: 'mjcnfcr@iuncuf.com',
+        from: 'ijcfu@icfj.com',
+        subject: 'cifhcir',
+        html: '<h1>vgrvrvrgv</h1>',
+      })
+    }
+    const hashedPassword = bcrypt.hash(password, 12)
+    const newUser = new User({
+      email,
+      password: hashedPassword,
+      cart: { items: [] },
     })
+    return newUser.save()
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 exports.postLogout = (req, res) => {
